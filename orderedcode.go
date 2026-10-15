@@ -14,6 +14,9 @@
 //
 // Modified by the raftseg authors. The module path and import comment were
 // changed for this fork's module, and doc comments reformatted by gofmt.
+// Behavioural change, marked "Fork" where it is made: Parse rejects
+// float64, int64 and uint64 encodings that Append never writes, so that
+// every value has exactly one encoding that parses (see FORK.md).
 
 /*
 Package orderedcode provides a byte encoding of a sequence of typed items.
@@ -161,6 +164,11 @@ type StringOrInfinity struct {
 
 // TrailingString is a string that, if present, must be the last item appended
 // or parsed.
+//
+// A TrailingString has no terminator, so in decreasing order (Decr) it still
+// sorts before its own extensions: Decr(TrailingString("a")) sorts before
+// Decr(TrailingString("ab")). Strings that are not prefixes of each other
+// sort in decreasing order. (Documented by the raftseg fork.)
 type TrailingString string
 
 // Decr wraps a value so that it is encoded or decoded in decreasing order.
@@ -485,21 +493,29 @@ func parseInfinity(s string, dir byte) (string, error) {
 
 func parseFloat64(dst *float64, s string, dir byte) (string, error) {
 	var i int64
-	s, err := parseInt64(&i, s, dir)
+	rest, err := parseInt64(&i, s, dir)
 	if err != nil {
 		return "", err
 	}
 	if i < 0 {
 		i = math.MinInt64 - i
 	}
-	*dst = math.Float64frombits(uint64(i))
-	return s, nil
+	f := math.Float64frombits(uint64(i))
+	// Fork: the int64 encoding of math.MinInt64 decodes to +0, whose
+	// encoding is that of 0. Reject it, as Append never writes it.
+	var buf [10]byte
+	if !encodedAs(appendFloat64(buf[:0], f), s[:len(s)-len(rest)], dir) {
+		return "", errCorrupt
+	}
+	*dst = f
+	return rest, nil
 }
 
 func parseInt64(dst *int64, s string, dir byte) (string, error) {
 	if len(s) == 0 {
 		return "", errCorrupt
 	}
+	in, inDir := s, dir // Fork: for the check below
 	// Fast-path any single-byte encoding.
 	c := s[0] ^ dir
 	if c >= 0x40 && c < 0xc0 {
@@ -543,8 +559,17 @@ func parseInt64(dst *int64, s string, dir byte) (string, error) {
 	if neg {
 		x = ^x
 	}
+	// Fork: reject encodings that are longer than they need to be (zero
+	// written in two bytes, say) or that overflow an int64. Append writes
+	// neither, and accepting them would give one value several encodings
+	// that sort apart.
+	rest := s[n:]
+	var buf [10]byte
+	if !encodedAs(appendInt64(buf[:0], x), in[:len(in)-len(rest)], inDir) {
+		return "", errCorrupt
+	}
 	*dst = x
-	return s[n:], nil
+	return rest, nil
 }
 
 func parseUint64(dst *uint64, s string, dir byte) (string, error) {
@@ -559,6 +584,25 @@ func parseUint64(dst *uint64, s string, dir byte) (string, error) {
 	for i := 0; i < n; i++ {
 		x = x<<8 | uint64(s[1+i]^dir)
 	}
+	// Fork: reject leading zero bytes, which Append never writes.
+	var buf [9]byte
+	if !encodedAs(appendUint64(buf[:0], x), s[:1+n], dir) {
+		return "", errCorrupt
+	}
 	*dst = x
 	return s[1+n:], nil
+}
+
+// encodedAs reports whether enc, read in direction dir, is the increasing
+// encoding b. Fork: used to accept only the encodings Append writes.
+func encodedAs(b []byte, enc string, dir byte) bool {
+	if len(b) != len(enc) {
+		return false
+	}
+	for i := range b {
+		if b[i] != enc[i]^dir {
+			return false
+		}
+	}
+	return true
 }

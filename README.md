@@ -9,8 +9,11 @@ order) whose bytes sort in the same order as the tuples.
 - **No dependencies:** `go.mod` requires nothing, and every package, tests
   included, imports only the Go standard library and this module.
   `internal/depcheck` fails the tests otherwise.
-- **Same API and encoding as upstream v0.0.1.** [FORK.md](FORK.md) lists
-  every change.
+- **Same API and encoding as upstream v0.0.1.** `Parse` accepts only the
+  encodings `Append` writes, so each value has exactly one.
+  [FORK.md](FORK.md) lists every change.
+- **Property tests:** round trip, prefix, order and canonical parsing,
+  over generated tuples and from fuzzer input.
 
 Upstream's README is [UPSTREAM-README.md](UPSTREAM-README.md). The license
 is upstream's, Apache 2.0 ([LICENSE](LICENSE)); [NOTICE](NOTICE) lists what
@@ -30,6 +33,7 @@ read for this fork's pedigree.
 ```
 go test ./...
 go test -short -race ./...
+go test -run XXX -fuzz FuzzOrder .        # and FuzzRoundTrip, FuzzParse
 ```
 
 orderedcode is maintained alongside [raftseg](https://github.com/raftseg/raftseg).
