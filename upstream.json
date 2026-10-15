@@ -1,0 +1,12 @@
+{
+  "comment": "Where this fork comes from, for SBOMs. Update cherryPicked with every commit taken from upstream.",
+  "module": "github.com/google/orderedcode",
+  "version": "v0.0.1",
+  "repository": "https://github.com/google/orderedcode",
+  "commit": "9a3d15e0d5340bb1ba5db4071afd931e18b6e013",
+  "sum": "h1:UzfcAexk9Vhv8+9pNOgRu41f16lHq725vPwnSeiG/Us=",
+  "license": "Apache-2.0",
+  "copyright": "Google Inc.",
+  "changes": "FORK.md",
+  "cherryPicked": []
+}

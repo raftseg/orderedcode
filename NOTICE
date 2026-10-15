@@ -1,0 +1,24 @@
+orderedcode
+Copyright 2026 The raftseg authors.
+
+This module is a fork of Google's orderedcode and contains its code,
+licensed under the Apache License, Version 2.0 (LICENSE). Upstream ships no
+NOTICE file of its own. Every file modified by the raftseg authors says so
+in its header.
+
+./  (the whole module except internal/)
+    Origin:     github.com/google/orderedcode v0.0.1
+                https://github.com/google/orderedcode, tag v0.0.1,
+                commit 9a3d15e0d5340bb1ba5db4071afd931e18b6e013
+    Copyright:  Google Inc.
+    License:    LICENSE
+    Changes:
+      - Module path and import comment changed from
+        github.com/google/orderedcode to this module.
+      - Tests were added, and decoding changed as FORK.md describes.
+      - CONTRIBUTING, upstream's guide to contributing to Google's
+        repository, was removed. README.md was renamed to
+        UPSTREAM-README.md.
+
+internal/  (used by tests only)
+    Written by the raftseg authors.

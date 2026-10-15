@@ -11,6 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
+// Modified by the raftseg authors. The module path and import comment were
+// changed for this fork's module, and doc comments reformatted by gofmt.
 
 /*
 Package orderedcode provides a byte encoding of a sequence of typed items.
@@ -21,6 +24,7 @@ More precisely, suppose:
   - A is the encoding of the sequence of items [A_1..A_n],
   - B is the encoding of the sequence of items [B_1..B_n],
   - For each i, A_i and B_i have the same type.
+
 Then comparing A versus B lexicographically is the same as comparing the
 vectors [A_1..A_n] and [B_1..B_n] lexicographically.
 
@@ -42,6 +46,7 @@ valid item types are:
 
 As a convenience, orderedcode.Infinity is a value of type struct{}. For
 example, to encode a sequence of two strings, an 'infinity' and an uint64:
+
 	buf, err := orderedcode.Append(
 		nil, "foo", "bar", orderedcode.Infinity, uint64(42))
 	if err != nil {
@@ -50,6 +55,7 @@ example, to encode a sequence of two strings, an 'infinity' and an uint64:
 	key := string(buf)
 
 Alternatively, encoding can be done in multiple steps:
+
 	var buf []byte
 	// Ignore errors, for demonstration purposes.
 	buf, _ = orderedcode.Append(buf, "foo")
@@ -61,6 +67,7 @@ Alternatively, encoding can be done in multiple steps:
 Call Parse(encoded, &item1, ..., &itemN) to deconstruct an encoded string.
 The valid argument types are the pointers to the valid encoding types. For
 example:
+
 	var (
 		s1, s2    string
 		infinity3 struct{}
@@ -69,6 +76,7 @@ example:
 	remainingKey, err := orderedcode.Parse(key, &s1, &s2, &infinity3, &u4)
 
 Alternatively:
+
 	var (
 		x1, x2, x3 orderedcode.StringOrInfinity
 		u4         uint64
@@ -82,6 +90,7 @@ TrailingString simply allows a more efficient encoding while retaining the
 lexicographic order-maintaining property. If used, you cannot append a
 TrailingString and parse the result as a standard string, or as a
 StringOrInfinity. For example:
+
 	key, err := orderedcode.Append(
 		nil, "first", "middle", orderedcode.TrailingString("last"))
 	if err != nil {
@@ -110,6 +119,7 @@ A < B will equal A_i > B_i.
 
 To encode in decreasing order, wrap the item in an orderedcode.Decr value. To
 decode, wrap the item pointer in an orderedcode.Decr. For example:
+
 	key, err := orderedcode.Append(nil, "foo", orderedcode.Decr("bar"))
 	if err != nil {
 		return err
@@ -124,7 +134,7 @@ decode, wrap the item pointer in an orderedcode.Decr. For example:
 Each item's ordering is independent from other items, but the same ordering
 should be used to encode and decode the i'th item.
 */
-package orderedcode // import "github.com/google/orderedcode"
+package orderedcode // import "github.com/raftseg/orderedcode"
 
 import (
 	"errors"
